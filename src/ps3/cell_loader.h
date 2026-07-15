@@ -1,13 +1,13 @@
 #pragma once
 
 #include "elf_reader.h"
-#include "tinyxml.h"
+#include "tinyxml2.h"
 #include "sce.h"
 #include <string>
 
 class cell_loader {
   elf_reader<elf64> *m_elf;   ///< Handle for this loader's ELF reader.
-  TiXmlDocument m_database;   ///< Handle for this loader's NID xml database.
+  tinyxml2::XMLDocument m_database;   ///< Handle for this loader's NID xml database.
   uint64 m_relocAddr; // Base relocaton address for PRX's.
   uint64 m_gpValue;   // TOC value
   bool m_hasSegSym;   // has seg sym, but the real meaning

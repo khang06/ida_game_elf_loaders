@@ -9,11 +9,8 @@
 #define DATABASE_FILE "ps3.xml"
 
 static int idaapi 
- accept_file(linput_t *li, char fileformatname[MAX_FILE_FORMAT_NAME], int n)
+ accept_file(qstring* fileformatname, qstring* processor, linput_t* li, const char* filename)
 {
-  if (n > 0)
-    return 0;
-
   elf_reader<elf64> elf(li);
    
   if (elf.verifyHeader() &&
@@ -22,15 +19,14 @@ static int idaapi
     const char *type;
   
     if (elf.type() == ET_EXEC)
-      type = "Executable";
+      type = "Playstation 3 PPU Executable";
     else if (elf.type() == ET_SCE_PPURELEXEC)
-      type = "Relocatable Executable";
+      type = "Playstation 3 PPU Relocatable Executable";
     else
       return 0;
 
-    set_processor_type("ppc", SETPROC_ALL);
-        
-    qsnprintf(fileformatname, MAX_FILE_FORMAT_NAME, "Playstation 3 PPU %s", type);
+    *processor = "ppc";
+    *fileformatname = type;
     
     return 1 | ACCEPT_FIRST;
   }
@@ -41,12 +37,16 @@ static int idaapi
 static void idaapi 
  load_file(linput_t *li, ushort neflags, const char *fileformatname)
 {
+  inf_set_app_bitness(64);
+  inf_set_be(true);
+  inf_set_wide_high_byte_first(true);
+
   elf_reader<elf64> elf(li); elf.read();
     
   ea_t relocAddr = 0;
   if (elf.type() == ET_SCE_PPURELEXEC) {
     if (neflags & NEF_MAN) {
-      askaddr(&relocAddr, "Please specify a relocation address base.");
+      ask_addr(&relocAddr, "Please specify a relocation address base.");
     }
   }
 
